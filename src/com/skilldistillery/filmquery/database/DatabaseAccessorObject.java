@@ -71,7 +71,7 @@ public class DatabaseAccessorObject implements DatabaseAccessor {
 
 	@Override
 	public List<Actor> findActorsByFilmId(int filmId) {
-		List<Actor> la = new ArrayList<>();
+		List<Actor> listOfActors = new ArrayList<>();
 		String sql = "SELECT actor.* "
 						+ "FROM actor JOIN film_actor ON actor.id = film_actor.actor_id "
 						+ " JOIN film ON film.id = film_actor.film_id "
@@ -85,16 +85,62 @@ public class DatabaseAccessorObject implements DatabaseAccessor {
 			ResultSet actorResult = stmt.executeQuery();
 			while (actorResult.next()) {
 				actor = new Actor(actorResult.getInt("id"), actorResult.getString("first_name"), actorResult.getString("last_name"));
-				la.add(actor);
+				listOfActors.add(actor);
 			}
 			actorResult.close();
 			stmt.close();
 			conn.close();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return la;
+		return listOfActors;
+	}
+	
+	@Override
+	public List<Film> findFilmByKeyword(String keyword) {
+		List<Film> listOfFilms = new ArrayList<>();
+		String sql = "SELECT film.* FROM film WHERE film.title LIKE ?";
+		Connection conn = null;
+		Film film = null;
+		try {
+			conn = DriverManager.getConnection(URL, user, pass);
+			PreparedStatement stmt = conn.prepareStatement(sql);
+			stmt.setString(1, "%" + keyword + "%");
+			ResultSet fr = stmt.executeQuery();
+			while (fr.next()) {
+				film = new Film(fr.getInt("id"), fr.getString("title"), fr.getString("description"), fr.getInt("release_year"), fr.getInt("language_id"), fr.getInt("rental_duration"), fr.getDouble("rental_rate"), fr.getInt("length"), fr.getDouble("replacement_cost"), fr.getString("rating"), fr.getString("special_features"));
+				listOfFilms.add(film);
+			}
+			fr.close();
+			stmt.close();
+			conn.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return listOfFilms;
 	}
 
+	@Override
+	public String getLanguageOfFilm(int filmId) {
+		String sql = "SELECT film.*, language.name FROM film JOIN language ON film.language_id = language.id WHERE film.id = ?";
+		Connection conn = null;
+		String language = null;
+		try {
+			conn = DriverManager.getConnection(URL, user, pass);
+			PreparedStatement stmt = conn.prepareStatement(sql);
+			stmt.setInt(1, filmId);
+			ResultSet fr = stmt.executeQuery();
+			if (fr.next()) {
+				language =  fr.getString("language.name");
+			}
+			fr.close();
+			stmt.close();
+			conn.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return language;
+	}
+	
+	
 }
