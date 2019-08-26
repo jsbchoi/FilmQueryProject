@@ -172,14 +172,14 @@ public class DatabaseAccessorObject implements DatabaseAccessor {
 						  + "JOIN category ON category.id = film_category.category_id "
 				+ "WHERE film.id = ?";
 		Connection conn = null;
-		String language = null;
+		String category = null;
 		try {
 			conn = DriverManager.getConnection(URL, user, pass);
 			PreparedStatement stmt = conn.prepareStatement(sql);
 			stmt.setInt(1, filmId);
 			ResultSet fr = stmt.executeQuery();
 			if (fr.next()) {
-				language =  fr.getString("category.name");
+				category =  fr.getString("category.name");
 			}
 			fr.close();
 			stmt.close();
@@ -187,7 +187,7 @@ public class DatabaseAccessorObject implements DatabaseAccessor {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return language;
+		return category;
 	}
 
 	@Override
