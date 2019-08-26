@@ -12,31 +12,20 @@ import com.skilldistillery.filmquery.entities.Film;
 public class FilmQueryApp {
 
 	DatabaseAccessor db = new DatabaseAccessorObject();
+	Scanner input = new Scanner(System.in);
 
 	public static void main(String[] args) {
 		FilmQueryApp app = new FilmQueryApp();
-//    app.test();
 		app.launch();
 	}
-
-//	private void test() {
-//		Film film = db.findFilmById(1);
-//		System.out.println(film);
-//		Actor actor = db.findActorById(1);
-//		System.out.println(actor);
-//		List<Actor> la = db.findActorsByFilmId(1);
-//		System.out.println(la);
-//	}
-
+	
 	private void launch() {
-		Scanner input = new Scanner(System.in);
 
-		startUserInterface(input);
+		startUserInterface();
 
-		input.close();
 	}
 
-	private void startUserInterface(Scanner input) {
+	private void startUserInterface() {
 		boolean goAgain = true;
 		int userChoice = 0;
 		do {
@@ -52,9 +41,7 @@ public class FilmQueryApp {
 				if (input.hasNextInt()) {
 					userChoice = input.nextInt();
 				} else {
-					goAgain = true;
-					userChoice = -1;
-					throw new InputMismatchException(); 
+					throw new InputMismatchException();
 				}
 			} catch (InputMismatchException e) {
 				userChoice = -1;
@@ -62,10 +49,10 @@ public class FilmQueryApp {
 			}
 			switch (userChoice) {
 			case 1:
-				displayFilmData(db.findFilmById(getIntInput(input)));
+				displayFilmData(db.findFilmById(getIntInput()));
 				break;
 			case 2:
-				displayListData(db.findFilmByKeyword(getStringInput(input)));
+				displayListData(db.findFilmByKeyword(getStringInput()));
 				break;
 			case 3:
 				goAgain = false;
@@ -76,13 +63,14 @@ public class FilmQueryApp {
 		} while (goAgain);
 	}
 
-	private void displayFilmData(Film film) {
+	private int displayFilmData(Film film) {
 		if (film == null) {
 			System.out.println("Film not found");
 			System.out.println();
 		} else {
 			System.out.println("Title: " + film.getTitle() + "\nRelease year: " + film.getReleaseYear() + "\nRating: "
-					+ film.getRating() + "\nDescription: " + film.getDescription() + "\nLanguage: " + db.getLanguageOfFilm(film.getId()));
+					+ film.getRating() + "\nDescription: " + film.getDescription() + "\nLanguage: "
+					+ db.getLanguageOfFilm(film.getId()));
 			System.out.print("Starring: ");
 			List<Actor> listOfActors = db.findActorsByFilmId(film.getId());
 			for (int i = 0; i < listOfActors.size(); i++) {
@@ -95,6 +83,16 @@ public class FilmQueryApp {
 			System.out.println();
 			System.out.println();
 		}
+		if (subMenu() == 2) {
+			System.out.println(film + "Category: " + db.getCategoryOfFilm(film.getId()));
+			for (String s : db.getInventoryStatusOfFilm(film.getId())) {
+				System.out.println(s);
+			}
+			System.out.println();
+			return 0;
+		} else {
+			return 1;
+		}
 	}
 
 	private void displayListData(List<Film> listOfFilms) {
@@ -103,13 +101,17 @@ public class FilmQueryApp {
 			System.out.println();
 			return;
 		}
+		int returnFlag = 0;
 		for (Film f : listOfFilms) {
-			displayFilmData(f);
+			returnFlag = displayFilmData(f);
+			if (returnFlag == 1) {
+				break;
+			}
 		}
 		System.out.println();
 	}
-	
-	private int getIntInput(Scanner input) {
+
+	private int getIntInput() {
 		int userInput = 0;
 		do {
 			System.out.print("Please enter a number: ");
@@ -123,9 +125,27 @@ public class FilmQueryApp {
 		return userInput;
 	}
 
-	private String getStringInput(Scanner input) {
+	private String getStringInput() {
 		System.out.print("Enter a search keyword: ");
 		return input.next();
+	}
+
+	private int subMenu() {
+		int userInput = 0;
+		do {
+			System.out.println("1. Return to main menu\n2. View all film details.");
+			if (userInput <= 0 || userInput > 2) {
+				System.out.print("Please enter 1 or 2: ");
+			}
+			if (input.hasNextInt()) {
+				userInput = input.nextInt();
+			}
+			else {
+				userInput = -1;
+				input.next();
+			}
+		} while (userInput <= 0 || userInput > 2);
+		return userInput;
 	}
 
 }

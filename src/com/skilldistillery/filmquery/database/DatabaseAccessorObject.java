@@ -23,9 +23,15 @@ public class DatabaseAccessorObject implements DatabaseAccessor {
 			e.printStackTrace();
 		}
 	}
+	
 	@Override
 	public Film findFilmById(int filmId) {
-		String sql = "SELECT film.* FROM film WHERE film.id = ?";
+		if (filmId <= 0) {
+			return null;
+		}
+		String sql = "SELECT film.* "
+						+ "FROM film "
+						+ "WHERE film.id = ?";
 		Connection conn = null;
 		Film film = null;
 		try {
@@ -40,7 +46,6 @@ public class DatabaseAccessorObject implements DatabaseAccessor {
 			stmt.close();
 			conn.close();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return film;
@@ -48,7 +53,12 @@ public class DatabaseAccessorObject implements DatabaseAccessor {
 
 	@Override
 	public Actor findActorById(int actorId) {
-		String sql = "SELECT actor.* FROM actor WHERE actor.id = ?";
+		if (actorId <= 0) {
+			return null;
+		}
+		String sql = "SELECT actor.* "
+						+ "FROM actor "
+						+ "WHERE actor.id = ?";
 		Connection conn = null;
 		Actor actor = null;
 		try {
@@ -71,11 +81,14 @@ public class DatabaseAccessorObject implements DatabaseAccessor {
 
 	@Override
 	public List<Actor> findActorsByFilmId(int filmId) {
+		if (filmId <= 0) {
+			return null;
+		}
 		List<Actor> listOfActors = new ArrayList<>();
 		String sql = "SELECT actor.* "
 						+ "FROM actor JOIN film_actor ON actor.id = film_actor.actor_id "
-						+ " JOIN film ON film.id = film_actor.film_id "
-					 + "WHERE film.id = ?";
+								  + " JOIN film ON film.id = film_actor.film_id "
+						+ "WHERE film.id = ?";
 		Connection conn = null;
 		Actor actor = null;
 		try {
@@ -99,7 +112,9 @@ public class DatabaseAccessorObject implements DatabaseAccessor {
 	@Override
 	public List<Film> findFilmByKeyword(String keyword) {
 		List<Film> listOfFilms = new ArrayList<>();
-		String sql = "SELECT film.* FROM film WHERE film.title LIKE ?";
+		String sql = "SELECT film.* "
+						+ "FROM film "
+						+ "WHERE film.title LIKE ?";
 		Connection conn = null;
 		Film film = null;
 		try {
@@ -122,7 +137,12 @@ public class DatabaseAccessorObject implements DatabaseAccessor {
 
 	@Override
 	public String getLanguageOfFilm(int filmId) {
-		String sql = "SELECT film.*, language.name FROM film JOIN language ON film.language_id = language.id WHERE film.id = ?";
+		if (filmId <= 0) {
+			return null;
+		}
+		String sql = "SELECT language.name "
+						+ "FROM film JOIN language ON film.language_id = language.id "
+						+ "WHERE film.id = ?";
 		Connection conn = null;
 		String language = null;
 		try {
@@ -141,6 +161,62 @@ public class DatabaseAccessorObject implements DatabaseAccessor {
 		}
 		return language;
 	}
-	
+
+	@Override
+	public String getCategoryOfFilm(int filmId) {
+		if (filmId <= 0) {
+			return null;
+		}
+		String sql = "SELECT category.name "
+				+ "FROM film JOIN film_category ON film.id = film_category.film_id "
+						  + "JOIN category ON category.id = film_category.category_id "
+				+ "WHERE film.id = ?";
+		Connection conn = null;
+		String language = null;
+		try {
+			conn = DriverManager.getConnection(URL, user, pass);
+			PreparedStatement stmt = conn.prepareStatement(sql);
+			stmt.setInt(1, filmId);
+			ResultSet fr = stmt.executeQuery();
+			if (fr.next()) {
+				language =  fr.getString("category.name");
+			}
+			fr.close();
+			stmt.close();
+			conn.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return language;
+	}
+
+	@Override
+	public List<String> getInventoryStatusOfFilm(int filmId) {
+		if (filmId <= 0) {
+			return null;
+		}
+		List<String> listOfLocations = new ArrayList<>();
+		String sql = "SELECT inventory_item.film_id, inventory_item.store_id, inventory_item.media_condition "
+				+ "FROM inventory_item "
+				+ "WHERE inventory_item.film_id = ?";
+		Connection conn = null;
+		try {
+			conn = DriverManager.getConnection(URL, user, pass);
+			PreparedStatement stmt = conn.prepareStatement(sql);
+			stmt.setInt(1, filmId);
+			ResultSet fr = stmt.executeQuery();
+			while (fr.next()) {
+				StringBuilder sb = new StringBuilder();
+				sb.append("Film id #").append(filmId).append(" available at store #").append(fr.getString("inventory_item.store_id")).append(" Condition: ").append(fr.getString("inventory_item.media_condition"));
+				listOfLocations.add(sb.toString());
+			}
+			fr.close();
+			stmt.close();
+			conn.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return listOfLocations;
+	}
 	
 }
