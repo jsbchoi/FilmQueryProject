@@ -87,5 +87,10 @@ class DatabaseAccessTests {
 	  assertEquals("Sports", cat);
   }
 
+  @Test 
+  void test_get_inventory_returns_correct_size_list() {
+	  List<String> inventoryList = db.getInventoryStatusOfFilm(20);
+	  assertEquals(15, inventoryList.size());
+  }
   
 }
