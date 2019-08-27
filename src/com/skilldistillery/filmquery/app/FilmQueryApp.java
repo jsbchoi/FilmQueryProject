@@ -67,6 +67,7 @@ public class FilmQueryApp {
 		if (film == null) {
 			System.out.println("Film not found");
 			System.out.println();
+			return 0;
 		} else {
 			System.out.println("Title: " + film.getTitle() + "\nRelease year: " + film.getReleaseYear() + "\nRating: "
 					+ film.getRating() + "\nDescription: " + film.getDescription() + "\nLanguage: "
@@ -82,16 +83,16 @@ public class FilmQueryApp {
 			}
 			System.out.println();
 			System.out.println();
-		}
-		if (subMenu() == 2) {
-			System.out.println(film + "Category: " + db.getCategoryOfFilm(film.getId()));
-			for (String s : db.getInventoryStatusOfFilm(film.getId())) {
-				System.out.println(s);
+			if (subMenu() == 2) {
+				System.out.println(film + "Category: " + db.getCategoryOfFilm(film.getId()));
+				for (String s : db.getInventoryStatusOfFilm(film.getId())) {
+					System.out.println(s);
+				}
+				System.out.println();
+				return 0;
+			} else {
+				return 1;
 			}
-			System.out.println();
-			return 0;
-		} else {
-			return 1;
 		}
 	}
 
